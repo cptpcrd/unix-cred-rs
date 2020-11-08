@@ -1,0 +1,15 @@
+[package]
+name = "unix-cred"
+version = "0.1.0"
+edition = "2018"
+
+description = "A library that simplifies reading peer credentials from Unix sockets."
+readme = "README.md"
+authors = ["cptpcrd"]
+license = "MIT"
+categories = ["os::unix-apis"]
+keywords = ["unix", "sockets", "credentials"]
+repository = "https://github.com/cptpcrd/unix-cred-rs"
+
+[dependencies]
+libc = "0.2"
