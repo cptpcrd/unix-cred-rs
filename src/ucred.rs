@@ -19,6 +19,11 @@ pub struct Ucred {
 }
 
 #[cfg(target_os = "netbsd")]
+const PEERCRED_LEVEL: libc::c_int = 0;
+#[cfg(not(target_os = "netbsd"))]
+const PEERCRED_LEVEL: libc::c_int = libc::SOL_SOCKET;
+
+#[cfg(target_os = "netbsd")]
 const SO_PEERCRED: libc::c_int = crate::constants::LOCAL_PEEREID;
 #[cfg(not(target_os = "netbsd"))]
 const SO_PEERCRED: libc::c_int = libc::SO_PEERCRED;
@@ -32,7 +37,7 @@ pub(crate) unsafe fn get_ucred_raw(sockfd: RawFd) -> io::Result<Ucred> {
 
     let len = crate::util::getsockopt_raw(
         sockfd,
-        libc::SOL_SOCKET,
+        PEERCRED_LEVEL,
         SO_PEERCRED,
         std::slice::from_mut(&mut ucred),
     )?;
