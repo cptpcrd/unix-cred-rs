@@ -125,6 +125,24 @@ mod tests {
         assert_eq!(bgid, unsafe { libc::getgid() });
     }
 
+    #[test]
+    fn test_get_peer_ids_bad_fd() {
+        assert_eq!(
+            get_peer_ids(unsafe { &UnixStream::from_raw_fd(-1) })
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::EBADF),
+        );
+
+        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
+        assert_eq!(
+            get_peer_ids(unsafe { &UnixStream::from_raw_fd(file.as_raw_fd()) })
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::ENOTSOCK),
+        );
+    }
+
     #[cfg(any(
         target_os = "linux",
         target_os = "openbsd",
