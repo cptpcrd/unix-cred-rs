@@ -20,20 +20,26 @@
 //!
 //! # What are the other modules I see in this crate?
 //!
-//! The `ucred` and `xucred` modules expose the OS-specific interfaces. `ucred` provides the
-//! Linux/OpenBSD/NetBSD interface, and `xucred` provides the macOS/FreeBSD/DragonFlyBSD interface.
+//! The `ucred`, `xucred`, and `peerucred` modules expose the OS-specific interfaces. `ucred`
+//! provides the Linux/OpenBSD/NetBSD interface, `xucred` provides the macOS/FreeBSD/DragonFlyBSD
+//! interface, and `peerucred` provides the Solaris/Illumos nterface.
 //!
 //! `ucred` is not particularly useful; in most cases you should use `get_peer_ids()` or
 //! `get_peer_pid_ids()`, which are more cross-platform. However, `xucred` can be helpful since it
-//! provides access to the process's full supplementary group list.
+//! provides access to the process's full supplementary group list, and `peerucred` provides
+//! access to a number of attributes of the process.
 
 use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;
 
 mod constants;
+
+#[cfg(not(any(target_os = "illumos", target_os = "solaris")))]
 mod util;
 
+#[cfg(any(target_os = "illumos", target_os = "solaris"))]
+pub mod peerucred;
 #[cfg(any(target_os = "linux", target_os = "openbsd", target_os = "netbsd"))]
 pub mod ucred;
 #[cfg(any(
@@ -63,6 +69,12 @@ unsafe fn get_peer_ids_raw(sockfd: RawFd) -> io::Result<(libc::uid_t, libc::gid_
         let cred = xucred::get_xucred_raw(sockfd)?;
         return Ok((cred.uid(), cred.gid()));
     }
+
+    #[cfg(any(target_os = "illumos", target_os = "solaris"))]
+    {
+        let cred = peerucred::getpeerucred_raw(sockfd)?;
+        return Ok((cred.euid(), cred.egid()));
+    }
 }
 
 /// Get the UID and GID of the given socket's peer.
@@ -76,6 +88,8 @@ pub fn get_peer_ids(sock: &UnixStream) -> io::Result<(libc::uid_t, libc::gid_t)>
     target_os = "openbsd",
     target_os = "netbsd",
     target_os = "freebsd",
+    target_os = "illumos",
+    target_os = "solaris",
 ))]
 #[allow(clippy::needless_return)]
 #[inline]
@@ -93,6 +107,12 @@ unsafe fn get_peer_pid_ids_raw(
         let cred = xucred::get_xucred_raw(sockfd)?;
         return Ok((cred.pid(), cred.uid(), cred.gid()));
     }
+
+    #[cfg(any(target_os = "illumos", target_os = "solaris"))]
+    {
+        let cred = peerucred::getpeerucred_raw(sockfd)?;
+        return Ok((Some(cred.pid()), cred.euid(), cred.egid()));
+    }
 }
 
 /// Get the PID, UID, and GID of the given socket's peer.
@@ -104,6 +124,8 @@ unsafe fn get_peer_pid_ids_raw(
     target_os = "openbsd",
     target_os = "netbsd",
     target_os = "freebsd",
+    target_os = "illumos",
+    target_os = "solaris",
 ))]
 #[inline]
 pub fn get_peer_pid_ids(
@@ -152,6 +174,8 @@ mod tests {
         target_os = "openbsd",
         target_os = "netbsd",
         target_os = "freebsd",
+        target_os = "illumos",
+        target_os = "solaris",
     ))]
     #[test]
     fn test_get_peer_pid_ids() {
@@ -173,6 +197,8 @@ mod tests {
         target_os = "openbsd",
         target_os = "netbsd",
         target_os = "freebsd",
+        target_os = "illumos",
+        target_os = "solaris",
     ))]
     #[test]
     fn test_get_peer_pid_ids_bad_fd() {
