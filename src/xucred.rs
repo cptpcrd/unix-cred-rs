@@ -218,5 +218,14 @@ mod tests {
         // 0 -> no PID
         #[cfg(target_os = "freebsd")]
         assert_eq!(zcred.pid(), None);
+
+        #[cfg(target_os = "freebsd")]
+        unsafe {
+            let mut cr: xucred_cr::XucredCr = std::mem::zeroed();
+            assert_eq!(format!("{:?}", cr), "XucredCr { pid: 0 }");
+
+            cr.cr_pid = 1;
+            assert_eq!(format!("{:?}", cr), "XucredCr { pid: 1 }");
+        }
     }
 }
