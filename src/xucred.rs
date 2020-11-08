@@ -143,7 +143,7 @@ mod tests {
 
     #[cfg(target_os = "freebsd")]
     fn get_expected_pid() -> Option<libc::pid_t> {
-        if super::super::has_cr_pid() {
+        if crate::util::has_cr_pid() {
             Some(unsafe { libc::getpid() })
         } else {
             None

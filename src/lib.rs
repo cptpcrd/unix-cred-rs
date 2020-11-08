@@ -83,36 +83,6 @@ pub fn get_peer_pid_ids(
     unsafe { get_peer_pid_ids_raw(sock.as_raw_fd()) }
 }
 
-#[cfg(all(test, target_os = "freebsd"))]
-fn has_cr_pid() -> bool {
-    let mut uname = unsafe { std::mem::zeroed() };
-    unsafe {
-        libc::uname(&mut uname);
-    }
-
-    let release_len = uname
-        .release
-        .iter()
-        .position(|c| *c == 0)
-        .unwrap_or_else(|| uname.release.len());
-
-    // uname.release is an array of `libc::c_char`s. `libc::c_char` may be either a u8 or an i8, so
-    // unfortunately we have to use unsafe operations to get a reference as a &[u8].
-    let release =
-        unsafe { core::slice::from_raw_parts(uname.release.as_ptr() as *const u8, release_len) };
-
-    let release_major = std::ffi::OsStr::from_bytes(release)
-        .to_str()
-        .unwrap()
-        .split('.')
-        .next()
-        .unwrap()
-        .parse::<i32>()
-        .unwrap();
-
-    release_major >= 13
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -177,7 +147,7 @@ mod tests {
     ))]
     fn get_expected_pid() -> Option<libc::pid_t> {
         #[cfg(target_os = "freebsd")]
-        if !has_cr_pid() {
+        if !util::has_cr_pid() {
             return None;
         }
 

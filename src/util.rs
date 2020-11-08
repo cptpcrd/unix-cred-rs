@@ -23,3 +23,33 @@ pub unsafe fn getsockopt_raw<T: Sized>(
 
     Ok(len as usize)
 }
+
+#[cfg(all(test, target_os = "freebsd"))]
+pub fn has_cr_pid() -> bool {
+    let mut uname = unsafe { std::mem::zeroed() };
+    unsafe {
+        libc::uname(&mut uname);
+    }
+
+    let release_len = uname
+        .release
+        .iter()
+        .position(|c| *c == 0)
+        .unwrap_or_else(|| uname.release.len());
+
+    // uname.release is an array of `libc::c_char`s. `libc::c_char` may be either a u8 or an i8, so
+    // unfortunately we have to use unsafe operations to get a reference as a &[u8].
+    let release =
+        unsafe { core::slice::from_raw_parts(uname.release.as_ptr() as *const u8, release_len) };
+
+    let release_major = std::ffi::OsStr::from_bytes(release)
+        .to_str()
+        .unwrap()
+        .split('.')
+        .next()
+        .unwrap()
+        .parse::<i32>()
+        .unwrap();
+
+    release_major >= 13
+}
