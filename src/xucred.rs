@@ -68,9 +68,7 @@ impl Xucred {
 
     /// Get the peer's supplementary group list.
     ///
-    /// On FreeBSD, this is truncated to the first 16 supplementary groups. If you need the full
-    /// group list, on FreeBSD 13+ you can use the PID (as returned by [`pid()`]) to look up the
-    /// process and determine its full group list.
+    /// On FreeBSD, this is truncated to the first 16 supplementary groups.
     ///
     /// [`pid()`]: #method.pid
     #[inline]
