@@ -8,7 +8,7 @@ readme = "README.md"
 authors = ["cptpcrd"]
 license = "MIT"
 categories = ["os::unix-apis"]
-keywords = ["unix", "sockets", "credentials"]
+keywords = ["unix", "sockets", "peer", "credentials"]
 repository = "https://github.com/cptpcrd/unix-cred-rs"
 
 [dependencies]
