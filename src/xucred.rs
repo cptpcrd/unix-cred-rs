@@ -13,7 +13,9 @@ mod xucred_cr {
     impl std::fmt::Debug for XucredCr {
         #[inline]
         fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            write!(f, "{{pid: {}}}", unsafe { self.cr_pid })
+            f.debug_struct("XucredCr")
+                .field("pid", unsafe { &self.cr_pid })
+                .finish()
         }
     }
 
