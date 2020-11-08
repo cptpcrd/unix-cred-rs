@@ -163,4 +163,44 @@ mod tests {
         #[cfg(target_os = "freebsd")]
         assert_eq!(bcred.pid(), get_expected_pid());
     }
+
+    fn same_hash<T: std::hash::Hash>(a: &T, b: &T) -> bool {
+        use std::hash::{BuildHasher, Hasher};
+
+        let s = std::collections::hash_map::RandomState::new();
+
+        let mut hasher_a = s.build_hasher();
+        a.hash(&mut hasher_a);
+
+        let mut hasher_b = s.build_hasher();
+        b.hash(&mut hasher_b);
+
+        hasher_a.finish() == hasher_b.finish()
+    }
+
+    #[test]
+    fn test_xucred() {
+        let (a, b) = UnixStream::pair().unwrap();
+
+        let acred = get_xucred(&a).unwrap();
+        let bcred = get_xucred(&b).unwrap();
+
+        assert_eq!(acred, bcred);
+        assert!(same_hash(&acred, &bcred));
+
+        assert_eq!(acred, acred.clone());
+        assert!(same_hash(&acred, &acred.clone()));
+
+        let zcred: Xucred = unsafe { std::mem::zeroed() };
+
+        assert_eq!(zcred, zcred.clone());
+        assert!(same_hash(&zcred, &zcred.clone()));
+
+        assert_ne!(acred, zcred);
+        assert!(!same_hash(&acred, &zcred));
+
+        // 0 -> no PID
+        #[cfg(target_os = "freebsd")]
+        assert_eq!(zcred.pid(), None);
+    }
 }
