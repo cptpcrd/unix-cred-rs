@@ -111,25 +111,18 @@ pub fn get_xucred(sock: &UnixStream) -> io::Result<Xucred> {
 mod tests {
     use super::*;
 
-    fn getgroups() -> io::Result<Vec<libc::gid_t>> {
+    fn getgroups() -> Vec<libc::gid_t> {
         let mut ngroups = unsafe { libc::getgroups(0, std::ptr::null_mut()) };
-        if ngroups < 0 {
-            return Err(io::Error::last_os_error());
-        }
+        assert!(ngroups >= 0, "{:?}", io::Error::last_os_error());
 
         let mut groups = Vec::new();
         groups.resize(ngroups as usize, 0);
 
-        if !groups.is_empty() {
-            ngroups = unsafe { libc::getgroups(groups.len() as libc::c_int, groups.as_mut_ptr()) };
-            if ngroups < 0 {
-                return Err(io::Error::last_os_error());
-            }
+        ngroups = unsafe { libc::getgroups(groups.len() as libc::c_int, groups.as_mut_ptr()) };
+        assert!(ngroups >= 0, "{:?}", io::Error::last_os_error());
 
-            groups.truncate(ngroups as usize);
-        }
-
-        Ok(groups)
+        groups.truncate(ngroups as usize);
+        groups
     }
 
     #[cfg(target_os = "freebsd")]
@@ -145,7 +138,7 @@ mod tests {
     fn test_get_xucred() {
         let (a, b) = UnixStream::pair().unwrap();
 
-        let mut groups = getgroups().unwrap();
+        let mut groups = getgroups();
         groups.sort();
 
         let acred = get_xucred(&a).unwrap();
