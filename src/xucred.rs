@@ -1,3 +1,6 @@
+//! The `xucred` module provides an interface to the `xucred` interface on FreeBSD, DragonflyBSD,
+//! and macOS.
+
 use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;

@@ -1,3 +1,32 @@
+//! # unix-cred
+//!
+//! `unix-cred` provides simple, cross-platform interfaces to read peer credentials from Unix
+//! sockets. (OS-specific interfaces are also exposed if the extra functionality is necessary).
+//!
+//! # Stream vs. Datagram sockets
+//!
+//! Some platforms support reading peer credentials from datagram sockets using ancillary messages.
+//! Currently, `unix-cred` does not support this; only stream sockets are supported.
+//!
+//! # Which credentials am I getting?
+//!
+//! On all currently supported platforms, both of the following are true:
+//!
+//! 1. The UID and GID returned by these interfaces are the *effective* UID/GID, not the real or
+//!    saved UID/GID.
+//! 2. The credentials returned are cached at the time that the `connect()`/`socketpair()` call was
+//!    made. (So if the process later drops privileges, or passes the file descriptor to an
+//!    unprivileged process, it will still be shown as having elevated privileges.)
+//!
+//! # What are the other modules I see in this crate?
+//!
+//! The `ucred` and `xucred` modules expose the OS-specific interfaces. `ucred` provides the
+//! Linux/OpenBSD/NetBSD interface, and `xucred` provides the macOS/FreeBSD/DragonFlyBSD interface.
+//!
+//! `ucred` is not particularly useful; in most cases you should use `get_peer_ids()` or
+//! `get_peer_pid_ids()`, which are more cross-platform. However, `xucred` can be helpful since it
+//! provides access to the process's full supplementary group list.
+
 use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;

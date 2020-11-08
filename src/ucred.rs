@@ -1,3 +1,17 @@
+//! The `ucred` module provides an interface to the `ucred` interface on Linux, the `sockpeecred`
+//! interface on OpenBSD, or the `unpcbid` interface on NetBSD.
+//!
+//! The reason that the interfaces for all three of these are in one module is that they are all
+//! essentially the same interface, with only minor implementation differences (such as the order
+//! of the fields in the C struct, or the name of the socket option used to retrieve them).
+//!
+//! Note: This module is only here for completeness. In most cases, you shoukd use
+//! [`get_peer_ids()`] or [`get_peer_pid_ids()`], which have slightly better cross-platform
+//! support.
+//!
+//! [`get_peer_ids()`]: ../fn.get_peer_ids.html
+//! [`get_peer_pid_ids()`]: ../fn.get_peer_pid_ids.html
+
 use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;
