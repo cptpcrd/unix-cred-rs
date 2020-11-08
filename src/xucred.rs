@@ -36,6 +36,7 @@ mod xucred_cr {
     }
 }
 
+/// Represents the credentials of a Unix socket's peer.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[repr(C)]
 pub struct Xucred {
@@ -50,21 +51,33 @@ pub struct Xucred {
 }
 
 impl Xucred {
+    /// Get the peer's effective user ID.
     #[inline]
     pub fn uid(&self) -> libc::uid_t {
         self.cr_uid
     }
 
+    /// Get the peer's effective group ID.
     #[inline]
     pub fn gid(&self) -> libc::gid_t {
         self.cr_groups[0]
     }
 
+    /// Get the peer's supplementary group list.
+    ///
+    /// On FreeBSD, this is truncated to the first 16 supplementary groups. If you need the full
+    /// group list, on FreeBSD 13+ you can use the PID (as returned by [`pid()`]) to look up the
+    /// process and determine its full group list.
+    ///
+    /// [`pid()`]: #method.pid
     #[inline]
     pub fn groups(&self) -> &[libc::gid_t] {
         &self.cr_groups[..self.cr_ngroups as usize]
     }
 
+    /// Get the peer's PID.
+    ///
+    /// This only works on FreeBSD 13+. On FreeBSD 12 and earlier, it always returns `None`.
     #[cfg(target_os = "freebsd")]
     #[inline]
     pub fn pid(&self) -> Option<libc::pid_t> {
@@ -104,6 +117,7 @@ pub(crate) unsafe fn get_xucred_raw(sockfd: RawFd) -> io::Result<Xucred> {
     Ok(xucred)
 }
 
+/// Get the credentials of the given socket's peer.
 #[inline]
 pub fn get_xucred(sock: &UnixStream) -> io::Result<Xucred> {
     unsafe { get_xucred_raw(sock.as_raw_fd()) }

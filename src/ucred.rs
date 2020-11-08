@@ -2,13 +2,18 @@ use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;
 
+/// Represents the credentials of a Unix socket's peer.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[repr(C)]
 pub struct Ucred {
+    /// The peer's PID.
     #[cfg(any(target_os = "linux", target_os = "netbsd"))]
     pub pid: libc::pid_t,
+    /// The peer's effective user ID.
     pub uid: libc::uid_t,
+    /// The peer's effective group ID.
     pub gid: libc::gid_t,
+    /// The peer's PID.
     #[cfg(target_os = "openbsd")]
     pub pid: libc::pid_t,
 }
@@ -39,6 +44,7 @@ pub(crate) unsafe fn get_ucred_raw(sockfd: RawFd) -> io::Result<Ucred> {
     Ok(ucred)
 }
 
+/// Get the credentials of the given socket's peer.
 #[inline]
 pub fn get_ucred(sock: &UnixStream) -> io::Result<Ucred> {
     unsafe { get_ucred_raw(sock.as_raw_fd()) }

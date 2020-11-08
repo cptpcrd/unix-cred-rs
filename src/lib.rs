@@ -36,6 +36,7 @@ unsafe fn get_peer_ids_raw(sockfd: RawFd) -> io::Result<(libc::uid_t, libc::gid_
     }
 }
 
+/// Get the UID and GID of the given socket's peer.
 #[inline]
 pub fn get_peer_ids(sock: &UnixStream) -> io::Result<(libc::uid_t, libc::gid_t)> {
     unsafe { get_peer_ids_raw(sock.as_raw_fd()) }
@@ -65,6 +66,10 @@ unsafe fn get_peer_pid_ids_raw(
     }
 }
 
+/// Get the PID, UID, and GID of the given socket's peer.
+///
+/// This only works on Linux, OpenBSD, NetBSD, and FreeBSD 13+. On other operating systems, this
+/// function is not available. On FreeBSD 12 and earlier, the returned PID is always `None`.
 #[cfg(any(
     target_os = "linux",
     target_os = "openbsd",
