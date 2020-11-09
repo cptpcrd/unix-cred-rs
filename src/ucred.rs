@@ -77,6 +77,8 @@ pub fn get_ucred(sock: &UnixStream) -> io::Result<Ucred> {
 mod tests {
     use super::*;
 
+    use std::os::unix::net::UnixDatagram;
+
     #[test]
     fn test_get_ucred() {
         let uid = unsafe { libc::getuid() };
@@ -94,5 +96,19 @@ mod tests {
         assert_eq!(bcred.uid, uid);
         assert_eq!(bcred.gid, gid);
         assert_eq!(bcred.pid, pid);
+    }
+
+    #[test]
+    fn test_get_ucred_error() {
+        let dir = tempfile::tempdir().unwrap();
+
+        let sock = UnixDatagram::bind(dir.path().join("sock")).unwrap();
+
+        let eno = get_ucred(unsafe { &UnixStream::from_raw_fd(sock.as_raw_fd()) })
+            .unwrap_err()
+            .raw_os_error()
+            .unwrap();
+
+        assert!([libc::EINVAL, libc::ENOTCONN].contains(&eno));
     }
 }
