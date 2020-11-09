@@ -174,6 +174,30 @@ mod tests {
         target_os = "netbsd",
         target_os = "freebsd",
     ))]
+    #[test]
+    fn test_get_peer_pid_ids_bad_fd() {
+        assert_eq!(
+            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(-1) })
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::EBADF),
+        );
+
+        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
+        assert_eq!(
+            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(file.as_raw_fd()) })
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::ENOTSOCK),
+        );
+    }
+
+    #[cfg(any(
+        target_os = "linux",
+        target_os = "openbsd",
+        target_os = "netbsd",
+        target_os = "freebsd",
+    ))]
     fn get_expected_pid() -> Option<libc::pid_t> {
         #[cfg(target_os = "freebsd")]
         if !util::has_cr_pid() {
