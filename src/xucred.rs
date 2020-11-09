@@ -128,6 +128,8 @@ pub fn get_xucred(sock: &UnixStream) -> io::Result<Xucred> {
 mod tests {
     use super::*;
 
+    use std::os::unix::net::UnixDatagram;
+
     fn getgroups() -> Vec<libc::gid_t> {
         let mut ngroups = unsafe { libc::getgroups(0, std::ptr::null_mut()) };
         assert!(ngroups >= 0, "{:?}", io::Error::last_os_error());
@@ -228,5 +230,19 @@ mod tests {
             cr.cr_pid = 1;
             assert_eq!(format!("{:?}", cr), "XucredCr { pid: 1 }");
         }
+    }
+
+    #[test]
+    fn test_get_xucred_error() {
+        let dir = tempfile::tempdir().unwrap();
+
+        let sock = UnixDatagram::bind(dir.path().join("sock")).unwrap();
+
+        assert_eq!(
+            get_xucred(unsafe { &UnixStream::from_raw_fd(sock.as_raw_fd()) })
+                .unwrap_err()
+                .raw_os_error(),
+            Some(libc::EINVAL),
+        );
     }
 }
