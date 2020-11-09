@@ -56,7 +56,11 @@ pub(crate) unsafe fn get_ucred_raw(sockfd: RawFd) -> io::Result<Ucred> {
         std::slice::from_mut(&mut ucred),
     )?;
 
-    if len != std::mem::size_of::<Ucred>() {
+    if len != std::mem::size_of::<Ucred>()
+        || ucred.pid == 0
+        || ucred.uid == libc::uid_t::MAX
+        || ucred.gid == libc::gid_t::MAX
+    {
         return Err(io::Error::from_raw_os_error(libc::EINVAL));
     }
 
