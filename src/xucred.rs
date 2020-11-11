@@ -69,8 +69,6 @@ impl Xucred {
     /// Get the peer's supplementary group list.
     ///
     /// On FreeBSD, this is truncated to the first 16 supplementary groups.
-    ///
-    /// [`pid()`]: #method.pid
     #[inline]
     pub fn groups(&self) -> &[libc::gid_t] {
         &self.cr_groups[..self.cr_ngroups as usize]

@@ -5,7 +5,7 @@
 //! essentially the same interface, with only minor implementation differences (such as the order
 //! of the fields in the C struct, or the name of the socket option used to retrieve them).
 //!
-//! Note: This module is only here for completeness. In most cases, you shoukd use
+//! Note: This module is only here for completeness. In most cases, you should use
 //! [`get_peer_ids()`] or [`get_peer_pid_ids()`], which have slightly better cross-platform
 //! support.
 //!
