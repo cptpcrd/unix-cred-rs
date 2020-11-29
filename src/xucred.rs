@@ -1,6 +1,8 @@
 //! The `xucred` module provides an interface to the `xucred` interface on FreeBSD, DragonflyBSD,
 //! and macOS.
 
+use std::fmt;
+
 use std::io;
 use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;
@@ -40,7 +42,7 @@ mod xucred_cr {
 }
 
 /// Represents the credentials of a Unix socket's peer.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Eq, Hash, PartialEq)]
 #[repr(C)]
 pub struct Xucred {
     cr_version: libc::c_uint,
@@ -84,6 +86,21 @@ impl Xucred {
             0 => None,
             pid => Some(pid),
         }
+    }
+}
+
+impl fmt::Debug for Xucred {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut s = f.debug_struct("Xucred");
+
+        s.field("uid", &self.uid())
+            .field("gid", &self.gid())
+            .field("groups", &self.groups());
+
+        #[cfg(target_os = "freebsd")]
+        s.field("pid", &self.pid());
+
+        s.finish()
     }
 }
 
@@ -227,6 +244,48 @@ mod tests {
 
             cr.cr_pid = 1;
             assert_eq!(format!("{:?}", cr), "XucredCr { pid: 1 }");
+        }
+
+        let mut test_cred: Xucred = unsafe { std::mem::zeroed() };
+
+        #[cfg(target_os = "freebsd")]
+        {
+            assert_eq!(
+                format!("{:?}", test_cred),
+                "Xucred { uid: 0, gid: 0, groups: [], pid: None }"
+            );
+
+            test_cred.cr_uid = 1000;
+            test_cred.cr_ngroups = 2;
+            test_cred.cr_groups[0] = 1001;
+            test_cred.cr_groups[1] = 10;
+            assert_eq!(
+                format!("{:?}", test_cred),
+                "Xucred { uid: 1000, gid: 1001, groups: [1001, 10], pid: None }"
+            );
+
+            test_cred._cr.cr_pid = 1494;
+            assert_eq!(
+                format!("{:?}", test_cred),
+                "Xucred { uid: 1000, gid: 1001, groups: [1001, 10], pid: Some(1494) }"
+            );
+        }
+
+        #[cfg(not(target_os = "freebsd"))]
+        {
+            assert_eq!(
+                format!("{:?}", test_cred),
+                "Xucred { uid: 0, gid: 0, groups: [] }"
+            );
+
+            test_cred.cr_uid = 1000;
+            test_cred.cr_ngroups = 2;
+            test_cred.cr_groups[0] = 1001;
+            test_cred.cr_groups[1] = 10;
+            assert_eq!(
+                format!("{:?}", test_cred),
+                "Xucred { uid: 1000, gid: 1001, groups: [1001, 10] }"
+            );
         }
     }
 
