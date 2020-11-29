@@ -173,14 +173,14 @@ mod tests {
         let (a, b) = UnixStream::pair().unwrap();
 
         let mut groups = getgroups();
-        groups.sort();
+        groups.sort_unstable();
 
         let acred = get_xucred(&a).unwrap();
         assert_eq!(acred.uid(), unsafe { libc::geteuid() });
         assert_eq!(acred.gid(), unsafe { libc::getegid() });
 
         let mut agroups = Vec::from(acred.groups());
-        agroups.sort();
+        agroups.sort_unstable();
         assert_eq!(agroups, groups);
 
         #[cfg(target_os = "freebsd")]
@@ -191,7 +191,7 @@ mod tests {
         assert_eq!(bcred.gid(), unsafe { libc::getegid() });
 
         let mut bgroups = Vec::from(bcred.groups());
-        bgroups.sort();
+        bgroups.sort_unstable();
         assert_eq!(bgroups, groups);
 
         #[cfg(target_os = "freebsd")]
