@@ -15,15 +15,6 @@ mod xucred_cr {
         _cr_unused_1: *const libc::c_void,
     }
 
-    impl std::fmt::Debug for XucredCr {
-        #[inline]
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            f.debug_struct("XucredCr")
-                .field("pid", unsafe { &self.cr_pid })
-                .finish()
-        }
-    }
-
     impl Eq for XucredCr {}
 
     impl std::hash::Hash for XucredCr {
@@ -236,15 +227,6 @@ mod tests {
         // 0 -> no PID
         #[cfg(target_os = "freebsd")]
         assert_eq!(zcred.pid(), None);
-
-        #[cfg(target_os = "freebsd")]
-        unsafe {
-            let mut cr: xucred_cr::XucredCr = std::mem::zeroed();
-            assert_eq!(format!("{:?}", cr), "XucredCr { pid: 0 }");
-
-            cr.cr_pid = 1;
-            assert_eq!(format!("{:?}", cr), "XucredCr { pid: 1 }");
-        }
 
         let mut test_cred: Xucred = unsafe { std::mem::zeroed() };
 
