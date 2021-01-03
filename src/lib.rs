@@ -132,7 +132,7 @@ mod tests {
     #[test]
     fn test_get_peer_ids_bad_fd() {
         assert_eq!(
-            get_peer_ids(unsafe { &UnixStream::from_raw_fd(-1) })
+            get_peer_ids(unsafe { &UnixStream::from_raw_fd(libc::c_int::MAX) })
                 .unwrap_err()
                 .raw_os_error(),
             Some(libc::EBADF),
@@ -177,7 +177,7 @@ mod tests {
     #[test]
     fn test_get_peer_pid_ids_bad_fd() {
         assert_eq!(
-            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(-1) })
+            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(libc::c_int::MAX) })
                 .unwrap_err()
                 .raw_os_error(),
             Some(libc::EBADF),
