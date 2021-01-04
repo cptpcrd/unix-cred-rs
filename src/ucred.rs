@@ -109,6 +109,6 @@ mod tests {
             .raw_os_error()
             .unwrap();
 
-        assert!([libc::EINVAL, libc::ENOTCONN].contains(&eno));
+        assert!(matches!(eno, libc::EINVAL | libc::ENOTCONN));
     }
 }
