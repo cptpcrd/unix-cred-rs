@@ -64,7 +64,9 @@ impl Xucred {
     /// On FreeBSD, this is truncated to the first 16 supplementary groups.
     #[inline]
     pub fn groups(&self) -> &[libc::gid_t] {
-        &self.cr_groups[..self.cr_ngroups as usize]
+        // SAFETY: get_xucred_raw() does a bound check on cr_ngroups
+        // (Also, cr_ngroups is set by the kernel and shouldn't overflow)
+        unsafe { &self.cr_groups.get_unchecked(..self.cr_ngroups as usize) }
     }
 
     /// Get the peer's PID.
