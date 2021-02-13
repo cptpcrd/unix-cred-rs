@@ -21,6 +21,9 @@ use std::os::unix::prelude::*;
 #[repr(C)]
 pub struct Ucred {
     /// The peer's PID.
+    ///
+    /// **WARNING**: This is the PID of the process that originally opened the socket. That process
+    /// may have died, and another process may now be running with that PID. Use with caution.
     #[cfg(any(target_os = "linux", target_os = "netbsd"))]
     pub pid: libc::pid_t,
     /// The peer's effective user ID.
@@ -28,6 +31,9 @@ pub struct Ucred {
     /// The peer's effective group ID.
     pub gid: libc::gid_t,
     /// The peer's PID.
+    ///
+    /// **WARNING**: This is the PID of the process that originally opened the socket. That process
+    /// may have died, and another process may now be running with that PID. Use with caution.
     #[cfg(target_os = "openbsd")]
     pub pid: libc::pid_t,
 }

@@ -70,6 +70,9 @@ impl Xucred {
     /// Get the peer's PID.
     ///
     /// This only works on FreeBSD 13+. On FreeBSD 12 and earlier, it always returns `None`.
+    ///
+    /// **WARNING**: This is the PID of the process that originally opened the socket. That process
+    /// may have died, and another process may now be running with that PID. Use with caution.
     #[cfg(target_os = "freebsd")]
     #[inline]
     pub fn pid(&self) -> Option<libc::pid_t> {
