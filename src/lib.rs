@@ -198,6 +198,7 @@ mod tests {
         target_os = "netbsd",
         target_os = "freebsd",
     ))]
+    #[allow(clippy::unnecessary_wraps)]
     fn get_expected_pid() -> Option<libc::pid_t> {
         #[cfg(target_os = "freebsd")]
         if !util::has_cr_pid() {
