@@ -26,30 +26,24 @@ pub unsafe fn getsockopt_raw<T: Sized>(
 
 #[cfg(all(test, target_os = "freebsd"))]
 pub fn has_cr_pid() -> bool {
-    let mut uname = unsafe { std::mem::zeroed() };
-    unsafe {
-        libc::uname(&mut uname);
-    }
+    const OSRELDATE_MIB: [libc::c_int; 2] = [libc::CTL_KERN, libc::KERN_OSRELDATE];
 
-    let release_len = uname
-        .release
-        .iter()
-        .position(|c| *c == 0)
-        .unwrap_or_else(|| uname.release.len());
+    let mut osreldate = 0;
+    let mut oldlen = core::mem::size_of::<libc::c_int>();
 
-    // uname.release is an array of `libc::c_char`s. `libc::c_char` may be either a u8 or an i8, so
-    // unfortunately we have to use unsafe operations to get a reference as a &[u8].
-    let release =
-        unsafe { core::slice::from_raw_parts(uname.release.as_ptr() as *const u8, release_len) };
+    assert_eq!(
+        unsafe {
+            libc::sysctl(
+                OSRELDATE_MIB.as_ptr(),
+                OSRELDATE_MIB.len() as _,
+                &mut osreldate as *mut _ as *mut _,
+                &mut oldlen,
+                core::ptr::null(),
+                0,
+            )
+        },
+        0
+    );
 
-    let release_major = std::ffi::OsStr::from_bytes(release)
-        .to_str()
-        .unwrap()
-        .split('.')
-        .next()
-        .unwrap()
-        .parse::<i32>()
-        .unwrap();
-
-    release_major >= 13
+    osreldate > 1202000
 }
