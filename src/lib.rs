@@ -99,6 +99,9 @@ unsafe fn get_peer_pid_ids_raw(
 ///
 /// This only works on Linux, OpenBSD, NetBSD, and FreeBSD 13+. On other operating systems, this
 /// function is not available. On FreeBSD 12 and earlier, the returned PID is always `None`.
+///
+/// **WARNING**: The returned PID is the PID of the process that originally opened the socket. That
+/// process may have died, and another process may now be running with that PID. Use with caution.
 #[cfg(any(
     target_os = "linux",
     target_os = "openbsd",
