@@ -8,32 +8,14 @@ use std::os::unix::net::UnixStream;
 use std::os::unix::prelude::*;
 
 #[cfg(target_os = "freebsd")]
-mod xucred_cr {
-    #[derive(Copy, Clone)]
-    pub union XucredCr {
-        pub cr_pid: libc::pid_t,
-        _cr_unused_1: *const libc::c_void,
-    }
-
-    impl Eq for XucredCr {}
-
-    impl std::hash::Hash for XucredCr {
-        #[inline]
-        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-            state.write_u64(unsafe { self.cr_pid } as u64)
-        }
-    }
-
-    impl PartialEq<Self> for XucredCr {
-        #[inline]
-        fn eq(&self, other: &Self) -> bool {
-            unsafe { self.cr_pid == other.cr_pid }
-        }
-    }
+#[derive(Copy, Clone)]
+union XucredCr {
+    cr_pid: libc::pid_t,
+    _cr_unused_1: *const libc::c_void,
 }
 
 /// Represents the credentials of a Unix socket's peer.
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct Xucred {
     cr_version: libc::c_uint,
@@ -41,7 +23,7 @@ pub struct Xucred {
     cr_ngroups: libc::c_short,
     cr_groups: [libc::gid_t; crate::constants::XU_NGROUPS],
     #[cfg(target_os = "freebsd")]
-    _cr: xucred_cr::XucredCr,
+    _cr: XucredCr,
     #[cfg(target_os = "dragonfly")]
     _cr_unused1: *const libc::c_void,
 }
@@ -82,6 +64,33 @@ impl Xucred {
             0 => None,
             pid => Some(pid),
         }
+    }
+}
+
+impl std::hash::Hash for Xucred {
+    #[inline]
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        state.write_u32(self.uid());
+        for &gid in self.groups() {
+            state.write_u32(gid);
+        }
+
+        #[cfg(target_os = "freebsd")]
+        state.write_i32(unsafe { self._cr.cr_pid });
+    }
+}
+
+impl Eq for Xucred {}
+
+impl PartialEq<Self> for Xucred {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        #[cfg(target_os = "freebsd")]
+        if unsafe { self._cr.cr_pid } != unsafe { other._cr.cr_pid } {
+            return false;
+        }
+
+        self.uid() == other.uid() && self.groups() == other.groups()
     }
 }
 
