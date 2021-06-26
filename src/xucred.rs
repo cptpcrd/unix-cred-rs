@@ -292,7 +292,7 @@ mod tests {
         let sock = UnixDatagram::bind(dir.path().join("sock")).unwrap();
 
         assert_eq!(
-            get_xucred(unsafe { &UnixStream::from_raw_fd(sock.as_raw_fd()) })
+            get_xucred(unsafe { &UnixStream::from_raw_fd(sock.into_raw_fd()) })
                 .unwrap_err()
                 .raw_os_error(),
             Some(libc::EINVAL),

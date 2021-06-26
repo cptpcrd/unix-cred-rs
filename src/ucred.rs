@@ -110,7 +110,7 @@ mod tests {
 
         let sock = UnixDatagram::bind(dir.path().join("sock")).unwrap();
 
-        let eno = get_ucred(unsafe { &UnixStream::from_raw_fd(sock.as_raw_fd()) })
+        let eno = get_ucred(unsafe { &UnixStream::from_raw_fd(sock.into_raw_fd()) })
             .unwrap_err()
             .raw_os_error()
             .unwrap();

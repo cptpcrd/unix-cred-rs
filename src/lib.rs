@@ -143,7 +143,7 @@ mod tests {
 
         let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
         assert_eq!(
-            get_peer_ids(unsafe { &UnixStream::from_raw_fd(file.as_raw_fd()) })
+            get_peer_ids(unsafe { &UnixStream::from_raw_fd(file.into_raw_fd()) })
                 .unwrap_err()
                 .raw_os_error(),
             Some(libc::ENOTSOCK),
@@ -188,7 +188,7 @@ mod tests {
 
         let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
         assert_eq!(
-            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(file.as_raw_fd()) })
+            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(file.into_raw_fd()) })
                 .unwrap_err()
                 .raw_os_error(),
             Some(libc::ENOTSOCK),
