@@ -38,6 +38,16 @@ pub struct Ucred {
     pub pid: libc::pid_t,
 }
 
+#[cfg(target_os = "linux")]
+const _UCRED_SIZE_CHECK: Ucred =
+    unsafe { std::mem::transmute([0u8; std::mem::size_of::<libc::ucred>()]) };
+#[cfg(target_os = "openbsd")]
+const _UCRED_SIZE_CHECK: Ucred =
+    unsafe { std::mem::transmute([0u8; std::mem::size_of::<libc::sockpeercred>()]) };
+#[cfg(target_os = "netbsd")]
+const _UCRED_SIZE_CHECK: Ucred =
+    unsafe { std::mem::transmute([0u8; std::mem::size_of::<libc::unpcbid>()]) };
+
 #[cfg(target_os = "netbsd")]
 const PEERCRED_LEVEL: libc::c_int = 0;
 #[cfg(not(target_os = "netbsd"))]

@@ -28,6 +28,9 @@ pub struct Xucred {
     _cr_unused1: *const libc::c_void,
 }
 
+const _XUCRED_SIZE_CHECK: Xucred =
+    unsafe { std::mem::transmute([0u8; std::mem::size_of::<libc::xucred>()]) };
+
 impl Xucred {
     /// Get the peer's effective user ID.
     #[inline]
