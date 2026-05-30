@@ -28,8 +28,8 @@ pub struct Xucred {
     _cr_unused1: *const libc::c_void,
 }
 
-const _XUCRED_SIZE_CHECK: Xucred =
-    unsafe { std::mem::transmute([0u8; std::mem::size_of::<libc::xucred>()]) };
+const _XUCRED_SIZE_CHECK: [(); std::mem::size_of::<Xucred>()] =
+    [(); std::mem::size_of::<libc::xucred>()];
 
 impl Xucred {
     /// Get the peer's effective user ID.
@@ -89,8 +89,10 @@ impl PartialEq<Self> for Xucred {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         #[cfg(target_os = "freebsd")]
-        if unsafe { self._cr.cr_pid } != unsafe { other._cr.cr_pid } {
-            return false;
+        {
+            if unsafe { self._cr.cr_pid } != unsafe { other._cr.cr_pid } {
+                return false;
+            }
         }
 
         self.uid() == other.uid() && self.groups() == other.groups()

@@ -300,8 +300,10 @@ mod tests {
     #[allow(clippy::unnecessary_wraps)]
     fn get_expected_pid() -> Option<libc::pid_t> {
         #[cfg(target_os = "freebsd")]
-        if !util::has_cr_pid() {
-            return None;
+        {
+            if !util::has_cr_pid() {
+                return None;
+            }
         }
 
         Some(unsafe { libc::getpid() })
