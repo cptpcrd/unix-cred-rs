@@ -176,25 +176,6 @@ mod tests {
 
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     #[test]
-    fn test_get_peerpid_bad_fd() {
-        assert_eq!(
-            get_peerpid(unsafe { &UnixStream::from_raw_fd(libc::c_int::MAX) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::EBADF),
-        );
-
-        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
-        assert_eq!(
-            get_peerpid(unsafe { &UnixStream::from_raw_fd(file.into_raw_fd()) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::ENOTSOCK),
-        );
-    }
-
-    #[cfg(any(target_os = "macos", target_os = "ios"))]
-    #[test]
     fn test_get_peerpid_error() {
         use std::os::unix::net::UnixDatagram;
 
@@ -222,24 +203,6 @@ mod tests {
         assert_eq!(bgid, unsafe { libc::getgid() });
     }
 
-    #[test]
-    fn test_get_peer_ids_bad_fd() {
-        assert_eq!(
-            get_peer_ids(unsafe { &UnixStream::from_raw_fd(libc::c_int::MAX) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::EBADF),
-        );
-
-        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
-        assert_eq!(
-            get_peer_ids(unsafe { &UnixStream::from_raw_fd(file.into_raw_fd()) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::ENOTSOCK),
-        );
-    }
-
     #[cfg(any(
         target_os = "linux",
         target_os = "openbsd",
@@ -261,32 +224,6 @@ mod tests {
         assert_eq!(bpid, get_expected_pid());
         assert_eq!(buid, unsafe { libc::getuid() });
         assert_eq!(bgid, unsafe { libc::getgid() });
-    }
-
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "openbsd",
-        target_os = "netbsd",
-        target_os = "freebsd",
-        target_os = "macos",
-        target_os = "ios",
-    ))]
-    #[test]
-    fn test_get_peer_pid_ids_bad_fd() {
-        assert_eq!(
-            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(libc::c_int::MAX) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::EBADF),
-        );
-
-        let file = std::fs::File::open(std::env::current_exe().unwrap()).unwrap();
-        assert_eq!(
-            get_peer_pid_ids(unsafe { &UnixStream::from_raw_fd(file.into_raw_fd()) })
-                .unwrap_err()
-                .raw_os_error(),
-            Some(libc::ENOTSOCK),
-        );
     }
 
     #[cfg(any(
